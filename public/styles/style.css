@@ -24,7 +24,8 @@
 
     --link-color: #a5a5a5;
 
-    --context-menu-color: #262626;
+    --context-menu-color: #FFFFFF;
+    --context-menu-border-color: #f1f2f4;
 
     --type-flow-color: #a5a5a5;
     --type-int-color: #21a4d0;
@@ -60,6 +61,7 @@
     --link-color: #ffffff;
 
     --context-menu-color: #262626;
+    --context-menu-border-color: #343335;
 
     --type-flow-color: #ffffff;
     --type-int-color: #54bde0;
@@ -164,6 +166,7 @@ h2 {
 .context-menu {
     position: absolute;
     visibility: collapse;
+    z-index: 999;
 }
 
 .context-menu.visible {
@@ -179,16 +182,16 @@ h2 {
     list-style-type: none;
 }
 
-.tree-view .branch > span::before {
+.tree-view .branch > div > span::before {
     content:"chevron_right";
+}
+
+.tree-view .branch.expanded > div > span::before {
+    content:"expand_more";
 }
 
 .tree-view .branch > ul {
     display: none;
-}
-
-.tree-view .branch.expanded > span::before {
-    content:"expand_more";
 }
 
 .tree-view .branch.expanded > ul {
@@ -365,14 +368,47 @@ h2 {
 }
 
 /* Node Menu */
-.graph-viewport .context-menu {
+#node-menu {
     background-color: var(--context-menu-color);
+    border: 1px solid var(--context-menu-border-color);
     border-radius: 0.125rem;
     padding: 0.5rem;
 }
 
-.graph-viewport .context-menu ul {
-    list-style-type: none;
+#node-menu .body {
+    margin-top: 0.5rem;
+    font-size: 14px;
+    overflow-y: scroll;
+    height: 16rem;
+}
+
+#node-menu .tree-view {
+    margin: 0;
+    display: block;
+}
+
+#node-menu .tree-view ul {
+    padding: 0;
+}
+
+#node-menu .tree-view span.material-symbols-rounded {
+    font-size: 16px;
+}
+
+#node-menu .tree-view li > div {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    user-select: none;
+}
+
+#node-menu .tree-view li > div:hover {
+    background-color: var(--button-hover-color);
+}
+
+#node-menu .tree-view li li div {
+    padding: 0.125rem;
+    padding-left: 2rem;
 }
 
 /* Util */
