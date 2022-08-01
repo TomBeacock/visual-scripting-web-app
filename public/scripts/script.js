@@ -456,34 +456,22 @@ var Graph;
 var nodeDefinitions = {
     start: {
         name: "Start",
+        category: "Flow",
         inputs: [],
         outputs: [{ name: "", type: "Flow" }]
     },
-    add: {
-        name: "Add",
-        inputs: [{ name: "A", type: "Int" }, { name: "B", type: "Int" }],
-        outputs: [{ name: "", type: "Int" }]
-    },
     if: {
         name: "If",
+        category: "Flow",
         inputs: [{ name: "", type: "Flow" }, { name: "Condition", type: "Boolean" }],
         outputs: [{ name: "True", type: "Flow" }, { name: "False", type: "Flow" }]
     },
-    test: {
-        name: "Test",
-        inputs: [
-            { name: "Int", type: "Int" },
-            { name: "Float", type: "Float" },
-            { name: "String", type: "String" },
-            { name: "Bool", type: "Boolean" }
-        ],
-        outputs: [
-            { name: "Int", type: "Int" },
-            { name: "Float", type: "Float" },
-            { name: "String", type: "String" },
-            { name: "Bool", type: "Boolean" }
-        ]
-    }
+    add: {
+        name: "Add",
+        category: "Math",
+        inputs: [{ name: "A", type: "Int" }, { name: "B", type: "Int" }],
+        outputs: [{ name: "", type: "Int" }]
+    },
 };
 var nodes = [
     {
@@ -523,6 +511,42 @@ var _loop_2 = function (i) {
 };
 for (var i = 0; i < treeViewBranches.length; i++) {
     _loop_2(i);
+}
+// Generate Add Node Menu Items
+function addTreeViewBranch(parent, label) {
+    var branchElement = document.createElement("li");
+    branchElement.classList.add("branch");
+    branchElement.addEventListener("click", function () { return branchElement.classList.toggle("expanded"); });
+    var rowElement = document.createElement("div");
+    var arrowElement = document.createElement("span");
+    arrowElement.classList.add("material-symbols-rounded");
+    rowElement.appendChild(arrowElement);
+    var labelElement = document.createElement("span");
+    labelElement.textContent = label;
+    rowElement.appendChild(labelElement);
+    branchElement.appendChild(rowElement);
+    var childList = document.createElement("ul");
+    branchElement.appendChild(childList);
+    parent.appendChild(branchElement);
+    return childList;
+}
+function addTreeViewListItem(parent, label) {
+    var itemElement = document.createElement("li");
+    itemElement.classList.add("branch");
+    var rowElement = document.createElement("div");
+    var labelElement = document.createElement("span");
+    labelElement.textContent = label;
+    rowElement.appendChild(labelElement);
+    itemElement.appendChild(rowElement);
+    parent.appendChild(itemElement);
+}
+var nodeTreeView = document.getElementById("node-tree-view");
+var categoryLists = {};
+for (var key in nodeDefinitions) {
+    var definition = nodeDefinitions[key];
+    if (!(definition.category in categoryLists))
+        categoryLists[definition.category] = addTreeViewBranch(nodeTreeView, definition.category);
+    addTreeViewListItem(categoryLists[definition.category], definition.name);
 }
 function roundMultiple(value, multiple) {
     return Math.round(value / multiple) * multiple;

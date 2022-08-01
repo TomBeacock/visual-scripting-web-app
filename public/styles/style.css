@@ -182,11 +182,11 @@ h2 {
     list-style-type: none;
 }
 
-.tree-view .branch > div > span::before {
+.tree-view .branch > div > .material-symbols-rounded::before {
     content:"chevron_right";
 }
 
-.tree-view .branch.expanded > div > span::before {
+.tree-view .branch.expanded > div > .material-symbols-rounded::before {
     content:"expand_more";
 }
 
@@ -373,6 +373,13 @@ h2 {
     border: 1px solid var(--context-menu-border-color);
     border-radius: 0.125rem;
     padding: 0.5rem;
+}
+
+#node-menu p {
+    text-align: center;
+    margin: 0;
+    margin-bottom: 0.25rem;
+    font-size: 14px;
 }
 
 #node-menu .body {
