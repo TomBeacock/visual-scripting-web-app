@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "module": "AMD",
+        "sourceMap": true,
+        "outFile": "./public/scripts/script.js"
+    },
+    "include": ["src/**/*"]
+}

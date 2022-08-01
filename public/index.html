@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html class="theme-dark">
+    <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins&family=Inter&family=Source+Code+Pro&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+        <link rel="stylesheet" href="styles/style.css">
+        <script src="scripts/script.js" defer></script>
+    </head>
+    <body>
+        <header>
+            <h1>Visual Scripting</h1>
+            <script>
+                function setThemeLight() {
+                    document.documentElement.classList.add("theme-light");
+                    document.documentElement.classList.remove("theme-dark");
+                }
+
+                function setThemeDark() {
+                    document.documentElement.classList.add("theme-dark");
+                    document.documentElement.classList.remove("theme-light");
+                }
+            </script>
+            <button onclick="setThemeLight()">Light</button>
+            <button onclick="setThemeDark()">Dark</button>
+        </header>
+        <div class="fill-height">
+            <div class="dock-pane graph">
+                <div class="header">
+                    <h2>Graph Editor</h2>
+                    <button class="icon-button blue"><span class="material-symbols-rounded">undo</span></button>
+                    <button class="icon-button blue"><span class="material-symbols-rounded">redo</span></button>
+                    <button class="icon-button green"><span class="material-symbols-rounded">play_arrow</span></button>
+                </div>
+                <div class="body">
+                    <div id="graph-viewport" class="graph-viewport">
+                        <svg id="graph-links" class="links"></svg>
+                        <div id="node-menu" class="context-menu">
+                            <input type="text"/>
+                            <ul class="tree-view">
+                                <li>Start</li>
+                                <li class="branch"><span class="material-symbols-rounded"></span>Flow
+                                    <ul>
+                                        <li>If</li>
+                                    </ul>
+                                </li>
+                                <li class="branch"><span class="material-symbols-rounded"></span>Math
+                                    <ul>
+                                        <li>Add</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dock-pane">
+                <div class="header">
+                    <h2>Console</h2>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
