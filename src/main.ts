@@ -17,6 +17,24 @@ const nodeDefinitions = {
         inputs: [{name: "A", type: "Int"}, {name: "B", type: "Int"}],
         outputs: [{name: "", type: "Int"}]
     },
+    subtract: {
+        name: "Subtract",
+        category: "Math",
+        inputs: [{name: "A", type: "Int"}, {name: "B", type: "Int"}],
+        outputs: [{name: "", type: "Int"}]
+    },
+    multipy: {
+        name: "Multiply",
+        category: "Math",
+        inputs: [{name: "A", type: "Int"}, {name: "B", type: "Int"}],
+        outputs: [{name: "", type: "Int"}]
+    },
+    divide: {
+        name: "Divide",
+        category: "Math",
+        inputs: [{name: "A", type: "Int"}, {name: "B", type: "Int"}],
+        outputs: [{name: "", type: "Int"}]
+    },
 };
 
 let nodes = [

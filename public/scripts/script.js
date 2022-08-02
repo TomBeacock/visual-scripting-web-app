@@ -1,20 +1,29 @@
-var CheckBox = /** @class */ (function () {
-    function CheckBox() {
-        var _this = this;
-        this.element = document.createElement("div");
-        this.element.classList.add("checkbox");
-        var tick = document.createElement("span");
-        tick.classList.add("material-symbols-rounded");
-        tick.innerHTML = "check";
-        this.element.appendChild(tick);
-        this.element.addEventListener("click", function () { return _this.setChecked(!_this.checked); });
+var Point = /** @class */ (function () {
+    function Point(x, y) {
+        this.x = x !== null && x !== void 0 ? x : 0;
+        this.y = y !== null && y !== void 0 ? y : 0;
     }
-    CheckBox.prototype.setChecked = function (checked) {
-        this.checked = checked;
-        this.element.setAttribute("checked", "".concat(this.checked));
+    Point.prototype.add = function (x, y) {
+        this.x += x;
+        this.y += y;
+        return this;
     };
-    return CheckBox;
+    return Point;
 }());
+function roundMultiple(value, multiple) {
+    return Math.round(value / multiple) * multiple;
+}
+function ceilMultiple(value, multiple) {
+    return Math.ceil(value / multiple) * multiple;
+}
+function getTranslation(element) {
+    var style = window.getComputedStyle(element);
+    var matrix = new DOMMatrixReadOnly(style.transform);
+    return new Point(matrix.m41, matrix.m42);
+}
+function setTranslation(element, translation) {
+    element.style.transform = "translate(".concat(translation.x, "px, ").concat(translation.y, "px)");
+}
 var LiteEvent = /** @class */ (function () {
     function LiteEvent() {
         this.handlers = [];
@@ -33,42 +42,63 @@ var LiteEvent = /** @class */ (function () {
     };
     return LiteEvent;
 }());
+var CheckBox = /** @class */ (function () {
+    function CheckBox() {
+        var _this = this;
+        this.element = document.createElement("div");
+        this.element.classList.add("checkbox");
+        var tick = document.createElement("span");
+        tick.classList.add("material-symbols-rounded");
+        tick.innerHTML = "check";
+        this.element.appendChild(tick);
+        this.element.addEventListener("click", function () { return _this.setChecked(!_this.checked); });
+    }
+    CheckBox.prototype.setChecked = function (checked) {
+        this.checked = checked;
+        this.element.setAttribute("checked", "".concat(this.checked));
+    };
+    return CheckBox;
+}());
 var Graph;
 (function (Graph_1) {
-    var Point = /** @class */ (function () {
-        function Point(x, y) {
-            this.x = x !== null && x !== void 0 ? x : 0;
-            this.y = y !== null && y !== void 0 ? y : 0;
-        }
-        Point.prototype.add = function (x, y) {
-            this.x += x;
-            this.y += y;
-            return this;
-        };
-        return Point;
-    }());
-    Graph_1.Point = Point;
     var Graph = /** @class */ (function () {
         function Graph() {
             var _this = this;
             this.nodes = [];
+            this.panning = false;
             this.dragging = false;
             this.dragNode = null;
             this.linking = false;
             this.linkPin = null;
             this.viewport = document.getElementById("graph-viewport");
+            this.graphArea = document.getElementById("graph-area");
             this.drawingLink = new Link();
+            this.viewport.addEventListener("mousedown", function (event) { return _this.onMouseDown(event); });
             this.viewport.addEventListener("mousemove", function (event) { return _this.onMouseMove(event); });
             this.viewport.addEventListener("mouseup", function (event) { return _this.onMouseUp(event); });
             this.viewport.addEventListener("contextmenu", function (event) { return _this.onContextMenu(event); });
         }
+        Graph.prototype.onMouseDown = function (event) {
+            if (this.dragging || this.linking)
+                return;
+            if (event.button == 1) {
+                this.dragTargetBegin = getTranslation(this.graphArea);
+                this.dragCursorBegin = new Point(event.clientX, event.clientY);
+                this.panning = true;
+            }
+        };
         Graph.prototype.onMouseMove = function (event) {
+            if (this.panning) {
+                var position = new Point(this.dragTargetBegin.x + event.clientX - this.dragCursorBegin.x, this.dragTargetBegin.y + event.clientY - this.dragCursorBegin.y);
+                setTranslation(this.graphArea, position);
+            }
             if (this.dragging) {
-                var position = new Point(this.dragNodeStart.x + event.clientX - this.dragCursorStart.x, this.dragNodeStart.y + event.clientY - this.dragCursorStart.y);
+                var position = new Point(this.dragTargetBegin.x + event.clientX - this.dragCursorBegin.x, this.dragTargetBegin.y + event.clientY - this.dragCursorBegin.y);
                 this.dragNode.setPosition(position);
             }
             if (this.linking) {
-                var position = new Point(event.clientX, event.clientY);
+                var areaRect = this.graphArea.getBoundingClientRect();
+                var position = new Point(event.clientX - areaRect.left, event.clientY - areaRect.top);
                 switch (this.linkPin.getType()) {
                     case PinType.Output:
                         this.drawingLink.setEndPoint(position);
@@ -80,8 +110,11 @@ var Graph;
             }
         };
         Graph.prototype.onMouseUp = function (event) {
+            if (this.panning) {
+                this.panning = false;
+            }
             if (this.dragging) {
-                this.dragNode.endDrag();
+                this.dragNode.element.style.cursor = null;
                 this.dragNode = null;
                 this.dragging = false;
             }
@@ -92,22 +125,29 @@ var Graph;
         };
         Graph.prototype.onContextMenu = function (event) {
             event.preventDefault();
+            var viewportRect = this.viewport.getBoundingClientRect();
             var nodeMenu = document.getElementById("node-menu");
-            var rect = this.viewport.getBoundingClientRect();
-            nodeMenu.style.left = "".concat(event.clientX - rect.x, "px");
-            nodeMenu.style.top = "".concat(event.clientY - rect.y, "px");
+            var nodeMenuRect = nodeMenu.getBoundingClientRect();
+            var alignRight = event.clientX > viewportRect.width / 2;
+            nodeMenu.style.left = "".concat(event.clientX - viewportRect.x - (alignRight ? nodeMenuRect.width : 0), "px");
+            nodeMenu.style.top = "".concat(event.clientY - viewportRect.y, "px");
             nodeMenu.classList.add("visible");
             var searchbar = document.getElementById("node-search-bar");
             searchbar.value = "";
             searchbar.focus();
         };
         Graph.prototype.beginDrag = function (node, position) {
+            if (this.panning || this.linking)
+                return;
             this.dragNode = node;
-            this.dragCursorStart = position;
-            this.dragNodeStart = this.dragNode.getPosition();
+            this.dragNode.element.style.cursor = "grabbing";
+            this.dragCursorBegin = position;
+            this.dragTargetBegin = this.dragNode.getPosition();
             this.dragging = true;
         };
         Graph.prototype.beginLink = function (pin) {
+            if (this.panning || this.dragging)
+                return;
             this.linkPin = pin;
             this.linking = true;
             var position = this.linkPin.getPosition();
@@ -254,8 +294,9 @@ var Graph;
             configurable: true
         });
         Pin.prototype.getPosition = function () {
-            var rect = this.element.getBoundingClientRect();
-            return new Point(rect.left + rect.width / 2, rect.top + rect.height / 2);
+            var graphRect = this.graph.graphArea.getBoundingClientRect();
+            var pinRect = this.element.getBoundingClientRect();
+            return new Point(pinRect.left + pinRect.width / 2 - graphRect.left, pinRect.top + pinRect.height / 2 - graphRect.top);
         };
         Pin.prototype.addLink = function (link) {
             this.links.push(link);
@@ -327,20 +368,20 @@ var Graph;
             this.graph = graph;
             var nodeDefinition = nodeDefinitions[nodeData.type];
             // Node
-            this.nodeElement = document.createElement("div");
-            this.nodeElement.addEventListener("mousedown", function (event) { return _this.onMouseDown(event); });
-            this.nodeElement.classList.add("graph-node");
+            this.element = document.createElement("div");
+            this.element.addEventListener("mousedown", function (event) { return _this.onMouseDown(event); });
+            this.element.classList.add("graph-node");
             // Head
             var head = document.createElement("div");
             head.classList.add("head");
             var title = document.createElement("span");
             title.innerHTML = nodeDefinition.name;
             head.appendChild(title);
-            this.nodeElement.appendChild(head);
+            this.element.appendChild(head);
             // Body
             var body = document.createElement("div");
             body.classList.add("body");
-            this.nodeElement.appendChild(body);
+            this.element.appendChild(body);
             // Rows
             var rows = Math.max(nodeDefinition.inputs.length, nodeDefinition.outputs.length);
             var _loop_1 = function (i) {
@@ -417,29 +458,25 @@ var Graph;
             for (var i = 0; i < rows; i++) {
                 _loop_1(i);
             }
-            this.graph.viewport.appendChild(this.nodeElement);
+            this.graph.graphArea.appendChild(this.element);
             this.setPosition(new Point(nodeData.posX, nodeData.posY));
         }
         Node.prototype.getPosition = function () {
-            var style = window.getComputedStyle(this.nodeElement);
-            var matrix = new DOMMatrixReadOnly(style.transform);
-            return new Point(matrix.m41, matrix.m42);
+            return getTranslation(this.element);
         };
         Node.prototype.setPosition = function (position) {
-            this.nodeElement.style.transform = "translate(".concat(position.x, "px, ").concat(position.y, "px)");
+            setTranslation(this.element, position);
             this.inputs.forEach(function (input) { return input.updateLinkPositions(); });
             this.outputs.forEach(function (output) { return output.updateLinkPositions(); });
-        };
-        Node.prototype.endDrag = function () {
-            this.nodeElement.style.cursor = null;
         };
         Node.prototype.onMouseDown = function (event) {
             if (!event.target.classList.contains("graph-node"))
                 return;
-            event.preventDefault();
-            var position = new Point(event.clientX, event.clientY);
-            this.graph.beginDrag(this, position);
-            this.nodeElement.style.cursor = "grabbing";
+            if (event.button == 0) {
+                event.preventDefault();
+                var position = new Point(event.clientX, event.clientY);
+                this.graph.beginDrag(this, position);
+            }
         };
         Node.currentID = 0;
         return Node;
@@ -471,6 +508,24 @@ var nodeDefinitions = {
     },
     add: {
         name: "Add",
+        category: "Math",
+        inputs: [{ name: "A", type: "Int" }, { name: "B", type: "Int" }],
+        outputs: [{ name: "", type: "Int" }]
+    },
+    subtract: {
+        name: "Subtract",
+        category: "Math",
+        inputs: [{ name: "A", type: "Int" }, { name: "B", type: "Int" }],
+        outputs: [{ name: "", type: "Int" }]
+    },
+    multipy: {
+        name: "Multiply",
+        category: "Math",
+        inputs: [{ name: "A", type: "Int" }, { name: "B", type: "Int" }],
+        outputs: [{ name: "", type: "Int" }]
+    },
+    divide: {
+        name: "Divide",
         category: "Math",
         inputs: [{ name: "A", type: "Int" }, { name: "B", type: "Int" }],
         outputs: [{ name: "", type: "Int" }]
@@ -543,11 +598,5 @@ for (var key in nodeDefinitions) {
     if (!(definition.category in categoryLists))
         categoryLists[definition.category] = addTreeViewBranch(nodeTreeView, definition.category);
     addTreeViewListItem(categoryLists[definition.category], definition.name);
-}
-function roundMultiple(value, multiple) {
-    return Math.round(value / multiple) * multiple;
-}
-function ceilMultiple(value, multiple) {
-    return Math.ceil(value / multiple) * multiple;
 }
 //# sourceMappingURL=script.js.map

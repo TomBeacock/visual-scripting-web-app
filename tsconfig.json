@@ -5,5 +5,11 @@
         "sourceMap": true,
         "outFile": "./public/scripts/script.js"
     },
-    "include": ["src/**/*"]
+    "files": [
+        "src/util.ts",
+        "src/event.ts",
+        "src/checkbox.ts",
+        "src/graph.ts",
+        "src/main.ts"
+    ]
 }

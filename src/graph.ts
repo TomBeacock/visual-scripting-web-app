@@ -1,28 +1,16 @@
 namespace Graph {
-    export class Point {
-        x: number;
-        y: number;
-
-        constructor(x?: number, y?: number) {
-            this.x = x ?? 0;
-            this.y = y ?? 0;
-        }
-
-        add(x: number, y: number): Point {
-            this.x += x;
-            this.y += y;
-            return this;
-        }
-    }
-
     export class Graph {
         viewport: HTMLElement;
+        graphArea: HTMLElement;
         nodes: Array<Node> = [];
         
+        private dragCursorBegin: Point;
+        private dragTargetBegin: Point;
+        
+        private panning: boolean = false;
         private dragging: boolean = false;
+
         private dragNode: Node = null;
-        private dragCursorStart: Point;
-        private dragNodeStart: Point;
         
         private linking: boolean = false;
         private linkPin: Pin = null;
@@ -30,23 +18,45 @@ namespace Graph {
 
         constructor() {
             this.viewport = document.getElementById("graph-viewport");
+            this.graphArea = document.getElementById("graph-area");
             this.drawingLink = new Link();
+            this.viewport.addEventListener("mousedown", event => this.onMouseDown(event));
             this.viewport.addEventListener("mousemove", event => this.onMouseMove(event));
             this.viewport.addEventListener("mouseup", event => this.onMouseUp(event));
             this.viewport.addEventListener("contextmenu", event => this.onContextMenu(event));
         }
 
+        private onMouseDown(event: MouseEvent): void {
+            if(this.dragging || this.linking)
+                return;
+
+            if(event.button == 1) {
+                this.dragTargetBegin = getTranslation(this.graphArea);
+                this.dragCursorBegin = new Point(event.clientX, event.clientY);
+                this.panning = true;
+            }
+        }
+
         private onMouseMove(event: MouseEvent): void {
+            if(this.panning) {
+                let position: Point = new Point(
+                    this.dragTargetBegin.x + event.clientX - this.dragCursorBegin.x,
+                    this.dragTargetBegin.y + event.clientY - this.dragCursorBegin.y
+                );
+                setTranslation(this.graphArea, position);
+            }
+
             if(this.dragging) {
                 let position: Point = new Point(
-                    this.dragNodeStart.x + event.clientX - this.dragCursorStart.x,
-                    this.dragNodeStart.y + event.clientY - this.dragCursorStart.y
+                    this.dragTargetBegin.x + event.clientX - this.dragCursorBegin.x,
+                    this.dragTargetBegin.y + event.clientY - this.dragCursorBegin.y
                 );
                 this.dragNode.setPosition(position);
             }
         
             if(this.linking) {
-                const position: Point = new Point(event.clientX, event.clientY);
+                const areaRect: DOMRect = this.graphArea.getBoundingClientRect();
+                const position: Point = new Point(event.clientX - areaRect.left, event.clientY - areaRect.top);
                 switch(this.linkPin.getType()) {
                     case PinType.Output:
                         this.drawingLink.setEndPoint(position);
@@ -59,8 +69,12 @@ namespace Graph {
         }
 
         private onMouseUp(event: MouseEvent): void {
+            if(this.panning) {
+                this.panning = false;
+            }
+            
             if(this.dragging) {
-                this.dragNode.endDrag();
+                this.dragNode.element.style.cursor = null;
                 this.dragNode = null;
                 this.dragging = false;
             }
@@ -73,10 +87,12 @@ namespace Graph {
 
         private onContextMenu(event: MouseEvent): void {
             event.preventDefault();
+            const viewportRect: DOMRect = this.viewport.getBoundingClientRect();
             const nodeMenu: HTMLElement = document.getElementById("node-menu");
-            const rect = this.viewport.getBoundingClientRect();
-            nodeMenu.style.left = `${event.clientX - rect.x}px`;
-            nodeMenu.style.top = `${event.clientY - rect.y}px`;
+            const nodeMenuRect: DOMRect = nodeMenu.getBoundingClientRect();
+            const alignRight = event.clientX > viewportRect.width / 2;
+            nodeMenu.style.left = `${event.clientX - viewportRect.x - (alignRight ? nodeMenuRect.width : 0)}px`;
+            nodeMenu.style.top = `${event.clientY - viewportRect.y}px`;
             nodeMenu.classList.add("visible");
 
             const searchbar: HTMLInputElement = <HTMLInputElement>document.getElementById("node-search-bar");
@@ -85,13 +101,20 @@ namespace Graph {
         }
 
         beginDrag(node: Node, position: Point): void {
+            if(this.panning || this.linking)
+                return;
+
             this.dragNode = node;
-            this.dragCursorStart = position;
-            this.dragNodeStart = this.dragNode.getPosition();
+            this.dragNode.element.style.cursor = "grabbing";
+            this.dragCursorBegin = position;
+            this.dragTargetBegin = this.dragNode.getPosition();
             this.dragging = true;
         }
 
         beginLink(pin: Pin): void {
+            if(this.panning || this.dragging)
+                return;
+
             this.linkPin = pin;
             this.linking = true;
 
@@ -126,6 +149,7 @@ namespace Graph {
 
         private startPoint: Point;
         private endPoint: Point;
+        private element: SVGElement;
         private path: SVGPathElement;
         private startPin: Pin;
         private endPin: Pin;
@@ -148,7 +172,7 @@ namespace Graph {
                 this.endPin = null;
                 this.endPoint = new Point();
             }
-
+            this.element = <SVGElement>document.createElementNS("http://www.w3.org/2000/svg", "svg");
             this.path = <SVGPathElement>document.createElementNS("http://www.w3.org/2000/svg", "path");
             const linksParent: HTMLElement = document.getElementById("graph-links");
             linksParent.appendChild(this.path);
@@ -253,8 +277,11 @@ namespace Graph {
         get onLinksChanged(): ILiteEvent<number> { return this.linksChangedEvent.expose(); }
 
         getPosition(): Point {
-            const rect: DOMRect = this.element.getBoundingClientRect();
-            return new Point(rect.left + rect.width / 2, rect.top + rect.height / 2);
+            const graphRect: DOMRect = this.graph.graphArea.getBoundingClientRect();
+            const pinRect: DOMRect = this.element.getBoundingClientRect();
+            return new Point(
+                pinRect.left + pinRect.width / 2 - graphRect.left,
+                pinRect.top + pinRect.height / 2 - graphRect.top);
         }
 
         addLink(link: Link): void {
@@ -333,7 +360,7 @@ namespace Graph {
         private id: number;
 
         // UI Elements
-        private nodeElement : HTMLDivElement;
+        element : HTMLDivElement;
         private inputs: Array<Pin> = [];
         private outputs: Array<Pin> = [];
 
@@ -346,9 +373,9 @@ namespace Graph {
             const nodeDefinition = nodeDefinitions[nodeData.type];
         
             // Node
-            this.nodeElement = document.createElement("div");
-            this.nodeElement.addEventListener("mousedown", event => this.onMouseDown(event));
-            this.nodeElement.classList.add("graph-node");
+            this.element = document.createElement("div");
+            this.element.addEventListener("mousedown", event => this.onMouseDown(event));
+            this.element.classList.add("graph-node");
         
             // Head
             const head: HTMLDivElement = document.createElement("div");
@@ -356,12 +383,12 @@ namespace Graph {
             const title: HTMLSpanElement = document.createElement("span");
             title.innerHTML = nodeDefinition.name;
             head.appendChild(title);
-            this.nodeElement.appendChild(head);
+            this.element.appendChild(head);
 
             // Body
             const body: HTMLDivElement = document.createElement("div");
             body.classList.add("body");
-            this.nodeElement.appendChild(body);
+            this.element.appendChild(body);
         
             // Rows
             let rows = Math.max(nodeDefinition.inputs.length, nodeDefinition.outputs.length);
@@ -444,36 +471,31 @@ namespace Graph {
                     body.appendChild(outputPin.element);
                 }
             }
-            this.graph.viewport.appendChild(this.nodeElement);
+            this.graph.graphArea.appendChild(this.element);
 
             this.setPosition(new Point(nodeData.posX, nodeData.posY));
         }
 
         getPosition(): Point {
-            const style: CSSStyleDeclaration = window.getComputedStyle(this.nodeElement);
-            const matrix: DOMMatrixReadOnly = new DOMMatrixReadOnly(style.transform);
-            return new Point(matrix.m41, matrix.m42);
+            return getTranslation(this.element);
         }
 
         setPosition(position: Point): void {
-            this.nodeElement.style.transform = `translate(${position.x}px, ${position.y}px)`;
+            setTranslation(this.element, position);
             this.inputs.forEach(input => input.updateLinkPositions());
             this.outputs.forEach(output => output.updateLinkPositions());
-        }
-
-        endDrag(): void {
-            this.nodeElement.style.cursor = null;
         }
 
         private onMouseDown(event: MouseEvent): void {
             if(!(<Element>event.target).classList.contains("graph-node"))
                 return; 
             
-            event.preventDefault();
-
-            const position: Point = new Point(event.clientX, event.clientY);
-            this.graph.beginDrag(this, position);
-            this.nodeElement.style.cursor = "grabbing";
+            if(event.button == 0) {
+                event.preventDefault();
+    
+                const position: Point = new Point(event.clientX, event.clientY);
+                this.graph.beginDrag(this, position);
+            }
         }
     }
 
