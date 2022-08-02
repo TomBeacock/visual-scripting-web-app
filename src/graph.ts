@@ -78,6 +78,10 @@ namespace Graph {
             nodeMenu.style.left = `${event.clientX - rect.x}px`;
             nodeMenu.style.top = `${event.clientY - rect.y}px`;
             nodeMenu.classList.add("visible");
+
+            const searchbar: HTMLInputElement = <HTMLInputElement>document.getElementById("node-search-bar");
+            searchbar.value = "";
+            searchbar.focus();
         }
 
         beginDrag(node: Node, position: Point): void {

@@ -97,6 +97,9 @@ var Graph;
             nodeMenu.style.left = "".concat(event.clientX - rect.x, "px");
             nodeMenu.style.top = "".concat(event.clientY - rect.y, "px");
             nodeMenu.classList.add("visible");
+            var searchbar = document.getElementById("node-search-bar");
+            searchbar.value = "";
+            searchbar.focus();
         };
         Graph.prototype.beginDrag = function (node, position) {
             this.dragNode = node;
@@ -499,20 +502,13 @@ var nodes = [
         outLinks: []
     }
 ];
+// Generate graph
 var graph = new Graph.Graph();
 for (var i = 0; i < nodes.length; i++) {
     var nodeData = nodes[i];
     graph.nodes.push(new Graph.Node(graph, nodeData));
 }
-var treeViewBranches = document.getElementsByClassName("branch");
-var _loop_2 = function (i) {
-    var branch = treeViewBranches[i];
-    branch.addEventListener("click", function () { return branch.classList.toggle("expanded"); });
-};
-for (var i = 0; i < treeViewBranches.length; i++) {
-    _loop_2(i);
-}
-// Generate Add Node Menu Items
+// Generate add node menu items
 function addTreeViewBranch(parent, label) {
     var branchElement = document.createElement("li");
     branchElement.classList.add("branch");

@@ -198,6 +198,25 @@ h2 {
     display: block;
 }
 
+.search-bar {
+    display: flex;
+    align-items: center;
+}
+
+.search-bar span.material-symbols-rounded {
+    font-size: 14px;
+}
+
+.search-bar input[type="text"] {
+    color: inherit;
+    background-color: transparent;
+    border: none;
+}
+
+.search-bar input[type="text"]:focus {
+    outline: none;
+}
+
 /* Dock Pane */
 .dock-pane {
     display: flex;
@@ -259,8 +278,6 @@ h2 {
 .graph-node .body {
     --pin-diameter: 1rem;
     position: relative;
-    /*width: calc(100% + var(--pin-diameter) * 2);*/
-    /*left: calc(var(--pin-diameter) * -1);*/
     margin-inline: calc(var(--pin-diameter) * -1);
     display: grid;
     align-items: center;
@@ -380,6 +397,13 @@ h2 {
     margin: 0;
     margin-bottom: 0.25rem;
     font-size: 14px;
+}
+
+#node-menu .search-bar {
+    color: var(--page-text-color);
+    background-color: var(--node-input-color);
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.25rem;
 }
 
 #node-menu .body {
