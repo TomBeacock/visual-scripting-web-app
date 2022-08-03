@@ -8,6 +8,11 @@ var Point = /** @class */ (function () {
         this.y += y;
         return this;
     };
+    Point.prototype.subtract = function (x, y) {
+        this.x -= x;
+        this.y -= y;
+        return this;
+    };
     return Point;
 }());
 var Rect = /** @class */ (function () {
@@ -29,6 +34,9 @@ function getTranslation(element) {
     var style = window.getComputedStyle(element);
     var matrix = new DOMMatrixReadOnly(style.transform);
     return new Point(matrix.m41, matrix.m42);
+}
+function getTopLeft(element) {
+    return new Point(element.offsetLeft, element.offsetTop);
 }
 function setTranslation(element, translation) {
     element.style.transform = "translate(".concat(translation.x, "px, ").concat(translation.y, "px)");
@@ -82,15 +90,16 @@ var Graph;
             this.viewport = document.getElementById("graph-viewport");
             this.graphArea = document.getElementById("graph-area");
             this.drawingLink = new Link();
+            this.drawingLink.reset();
             this.viewport.addEventListener("mousedown", function (event) { return _this.onMouseDown(event); });
             this.viewport.addEventListener("mousemove", function (event) { return _this.onMouseMove(event); });
             this.viewport.addEventListener("mouseup", function (event) { return _this.onMouseUp(event); });
             this.viewport.addEventListener("contextmenu", function (event) { return _this.onContextMenu(event); });
         }
         Graph.prototype.onMouseDown = function (event) {
-            if (this.dragging || this.linking)
-                return;
-            if (event.button == 1) {
+            if (event.button == 0)
+                document.getElementById("node-menu").classList.remove("visible");
+            if (event.button == 1 && !this.dragging && !this.linking) {
                 this.dragTargetBegin = getTranslation(this.graphArea);
                 this.dragCursorBegin = new Point(event.clientX, event.clientY);
                 this.panning = true;
@@ -181,6 +190,10 @@ var Graph;
             }
             this.drawingLink.reset();
             this.linking = false;
+        };
+        Graph.prototype.viewportToAreaPoint = function (point) {
+            var areaPos = getTranslation(this.graphArea);
+            return point.subtract(areaPos.x, areaPos.y);
         };
         return Graph;
     }());
@@ -401,13 +414,13 @@ var Graph;
         return Pin;
     }());
     var Node = /** @class */ (function () {
-        function Node(graph, nodeData) {
+        function Node(graph, type, position) {
             var _this = this;
             this.inputs = [];
             this.outputs = [];
             this.id = Node.currentID++;
             this.graph = graph;
-            var nodeDefinition = nodeDefinitions[nodeData.type];
+            var nodeDefinition = nodeDefinitions[type];
             // Node
             this.element = document.createElement("div");
             this.element.addEventListener("mousedown", function (event) { return _this.onMouseDown(event); });
@@ -501,7 +514,7 @@ var Graph;
             }
             var graphNodes = document.getElementById("graph-nodes");
             graphNodes.appendChild(this.element);
-            this.setPosition(new Point(nodeData.posX, nodeData.posY));
+            this.setPosition(position);
         }
         Node.prototype.getPosition = function () {
             return getTranslation(this.element);
@@ -603,7 +616,7 @@ var nodes = [
 var graph = new Graph.Graph();
 for (var i = 0; i < nodes.length; i++) {
     var nodeData = nodes[i];
-    graph.nodes.push(new Graph.Node(graph, nodeData));
+    graph.nodes.push(new Graph.Node(graph, nodeData.type, new Point(nodeData.posX, nodeData.posY)));
 }
 // Generate add node menu items
 function addTreeViewBranch(parent, label) {
@@ -632,13 +645,30 @@ function addTreeViewListItem(parent, label) {
     rowElement.appendChild(labelElement);
     itemElement.appendChild(rowElement);
     parent.appendChild(itemElement);
+    return itemElement;
 }
+var nodeMenu = document.getElementById("node-menu");
+nodeMenu.addEventListener("mousedown", function (event) {
+    if (event.button == 0)
+        event.stopPropagation();
+});
 var nodeTreeView = document.getElementById("node-tree-view");
 var categoryLists = {};
-for (var key in nodeDefinitions) {
+var _loop_2 = function (key) {
     var definition = nodeDefinitions[key];
     if (!(definition.category in categoryLists))
         categoryLists[definition.category] = addTreeViewBranch(nodeTreeView, definition.category);
-    addTreeViewListItem(categoryLists[definition.category], definition.name);
+    var listItem = addTreeViewListItem(categoryLists[definition.category], definition.name);
+    listItem.addEventListener("click", function (event) {
+        if (event.button == 0) {
+            event.stopPropagation();
+            var nodePosition = graph.viewportToAreaPoint(getTopLeft(nodeMenu));
+            graph.nodes.push(new Graph.Node(graph, key, nodePosition));
+            nodeMenu.classList.remove("visible");
+        }
+    });
+};
+for (var key in nodeDefinitions) {
+    _loop_2(key);
 }
 //# sourceMappingURL=script.js.map

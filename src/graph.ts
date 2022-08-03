@@ -20,6 +20,7 @@ namespace Graph {
             this.viewport = document.getElementById("graph-viewport");
             this.graphArea = document.getElementById("graph-area");
             this.drawingLink = new Link();
+            this.drawingLink.reset();
             this.viewport.addEventListener("mousedown", event => this.onMouseDown(event));
             this.viewport.addEventListener("mousemove", event => this.onMouseMove(event));
             this.viewport.addEventListener("mouseup", event => this.onMouseUp(event));
@@ -27,10 +28,10 @@ namespace Graph {
         }
 
         private onMouseDown(event: MouseEvent): void {
-            if(this.dragging || this.linking)
-                return;
+            if(event.button == 0)
+                document.getElementById("node-menu").classList.remove("visible");
 
-            if(event.button == 1) {
+            if(event.button == 1 && !this.dragging && !this.linking) {
                 this.dragTargetBegin = getTranslation(this.graphArea);
                 this.dragCursorBegin = new Point(event.clientX, event.clientY);
                 this.panning = true;
@@ -141,6 +142,11 @@ namespace Graph {
             }
             this.drawingLink.reset();
             this.linking = false;
+        }
+
+        viewportToAreaPoint(point: Point): Point {
+            const areaPos = getTranslation(this.graphArea);
+            return point.subtract(areaPos.x, areaPos.y);
         }
     }
 
@@ -403,11 +409,11 @@ namespace Graph {
 
         private graph: Graph;
     
-        constructor(graph: Graph, nodeData) {
+        constructor(graph: Graph, type: string, position: Point) {
             this.id = Node.currentID++;
             this.graph = graph;
 
-            const nodeDefinition = nodeDefinitions[nodeData.type];
+            const nodeDefinition = nodeDefinitions[type];
         
             // Node
             this.element = document.createElement("div");
@@ -511,7 +517,7 @@ namespace Graph {
             const graphNodes = document.getElementById("graph-nodes");
             graphNodes.appendChild(this.element);
 
-            this.setPosition(new Point(nodeData.posX, nodeData.posY));
+            this.setPosition(position);
         }
 
         getPosition(): Point {

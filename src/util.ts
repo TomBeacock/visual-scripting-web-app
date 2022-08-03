@@ -12,6 +12,12 @@ class Point {
         this.y += y;
         return this;
     }
+
+    subtract(x: number, y: number): Point {
+        this.x -= x;
+        this.y -= y;
+        return this;
+    }
 }
 
 class Rect {
@@ -40,6 +46,10 @@ function getTranslation(element: HTMLElement): Point {
     const style: CSSStyleDeclaration = window.getComputedStyle(element);
     const matrix: DOMMatrixReadOnly = new DOMMatrixReadOnly(style.transform);
     return new Point(matrix.m41, matrix.m42);
+}
+
+function getTopLeft(element: HTMLElement): Point {
+    return new Point(element.offsetLeft, element.offsetTop);
 }
 
 function setTranslation(element: HTMLElement | SVGElement, translation: Point): void {
