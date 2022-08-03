@@ -173,9 +173,11 @@ namespace Graph {
                 this.endPoint = new Point();
             }
             this.element = <SVGElement>document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            this.element.classList.add("graph-link");
             this.path = <SVGPathElement>document.createElementNS("http://www.w3.org/2000/svg", "path");
-            const linksParent: HTMLElement = document.getElementById("graph-links");
-            linksParent.appendChild(this.path);
+            this.element.appendChild(this.path);
+            const graphLinks: HTMLElement = document.getElementById("graph-links");
+            graphLinks.appendChild(this.element);
             this.updatePath();
         }
 
@@ -208,9 +210,44 @@ namespace Graph {
         }
 
         private updatePath(): void {
-            const startControl: Point = new Point(this.startPoint.x + Link.curve, this.startPoint.y);
-            const endControl: Point = new Point(this.endPoint.x - Link.curve, this.endPoint.y);
-            this.path.setAttribute("d", `M ${this.startPoint.x} ${this.startPoint.y} C ${startControl.x} ${startControl.y}, ${endControl.x} ${endControl.y}, ${this.endPoint.x} ${this.endPoint.y}`);
+            const startControlX: number = this.startPoint.x + Link.curve;
+            const endControlX: number = this.endPoint.x - Link.curve;
+
+            const newBounds: Rect = new Rect();
+
+            const s: Point = new Point();
+            const e: Point = new Point();
+
+            if(this.startPoint.x <= endControlX) {
+                newBounds.x = this.startPoint.x;
+                newBounds.width = this.endPoint.x - this.startPoint.x;
+                e.x = newBounds.width;
+            }
+            else {
+                newBounds.x = endControlX;
+                newBounds.width = startControlX - endControlX;
+                s.x = this.startPoint.x - endControlX;
+                e.x = Link.curve;
+            }
+
+            if(this.startPoint.y <= this.endPoint.y) {
+                newBounds.y = this.startPoint.y - 2;
+                newBounds.height = this.endPoint.y - this.startPoint.y + 4;
+                s.y = 2;
+                e.y = newBounds.height - 2;
+            }
+            else {
+                newBounds.y = this.endPoint.y - 2;
+                newBounds.height = this.startPoint.y - this.endPoint.y + 4;
+                s.y = newBounds.height - 2;
+                e.y = 2;
+            }
+
+            setTranslation(this.element, new Point(newBounds.x, newBounds.y));
+            this.element.setAttribute("width", `${newBounds.width}`);
+            this.element.setAttribute("height", `${newBounds.height}`)
+            
+            this.path.setAttribute("d", `M ${s.x} ${s.y} C ${s.x + Link.curve} ${s.y}, ${e.x - Link.curve} ${e.y}, ${e.x} ${e.y}`);
         }
     }
 
@@ -471,7 +508,8 @@ namespace Graph {
                     body.appendChild(outputPin.element);
                 }
             }
-            this.graph.graphArea.appendChild(this.element);
+            const graphNodes = document.getElementById("graph-nodes");
+            graphNodes.appendChild(this.element);
 
             this.setPosition(new Point(nodeData.posX, nodeData.posY));
         }

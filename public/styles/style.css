@@ -280,10 +280,6 @@ h2 {
     overflow: hidden;
 }
 
-.graph-area {
-
-}
-
 /* Graph Node */
 .graph-node {
     position: absolute;
@@ -407,15 +403,13 @@ h2 {
 }
 
 /* Links */
-.links {
+.graph-link {
     position: absolute;
-    top: 0;
-    width: 1000px;
-    height: 1000px;
     fill: transparent;
     stroke: var(--link-color);
     stroke-width: 2px;
     pointer-events: none;
+    user-select: none;
 }
 
 /* Node Menu */

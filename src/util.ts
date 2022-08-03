@@ -14,6 +14,20 @@ class Point {
     }
 }
 
+class Rect {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+
+    constructor(x?: number, y?: number, width?: number, height?: number) {
+        this.x = x ?? 0;
+        this.y = y ?? 0;
+        this.width = width ?? 0;
+        this.height = height ?? 0;
+    }
+}
+
 function roundMultiple(value: number, multiple: number): number {
     return Math.round(value / multiple) * multiple;
 }
@@ -28,6 +42,6 @@ function getTranslation(element: HTMLElement): Point {
     return new Point(matrix.m41, matrix.m42);
 }
 
-function setTranslation(element: HTMLElement, translation: Point): void {
+function setTranslation(element: HTMLElement | SVGElement, translation: Point): void {
     element.style.transform = `translate(${translation.x}px, ${translation.y}px)`;
 }

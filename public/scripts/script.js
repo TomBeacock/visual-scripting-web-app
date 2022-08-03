@@ -10,6 +10,15 @@ var Point = /** @class */ (function () {
     };
     return Point;
 }());
+var Rect = /** @class */ (function () {
+    function Rect(x, y, width, height) {
+        this.x = x !== null && x !== void 0 ? x : 0;
+        this.y = y !== null && y !== void 0 ? y : 0;
+        this.width = width !== null && width !== void 0 ? width : 0;
+        this.height = height !== null && height !== void 0 ? height : 0;
+    }
+    return Rect;
+}());
 function roundMultiple(value, multiple) {
     return Math.round(value / multiple) * multiple;
 }
@@ -194,9 +203,12 @@ var Graph;
                 this.endPin = null;
                 this.endPoint = new Point();
             }
+            this.element = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            this.element.classList.add("graph-link");
             this.path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            var linksParent = document.getElementById("graph-links");
-            linksParent.appendChild(this.path);
+            this.element.appendChild(this.path);
+            var graphLinks = document.getElementById("graph-links");
+            graphLinks.appendChild(this.element);
             this.updatePath();
         }
         Link.prototype.setStartPoint = function (startPoint) {
@@ -223,9 +235,38 @@ var Graph;
             this.endPin.breakLink(this);
         };
         Link.prototype.updatePath = function () {
-            var startControl = new Point(this.startPoint.x + Link.curve, this.startPoint.y);
-            var endControl = new Point(this.endPoint.x - Link.curve, this.endPoint.y);
-            this.path.setAttribute("d", "M ".concat(this.startPoint.x, " ").concat(this.startPoint.y, " C ").concat(startControl.x, " ").concat(startControl.y, ", ").concat(endControl.x, " ").concat(endControl.y, ", ").concat(this.endPoint.x, " ").concat(this.endPoint.y));
+            var startControlX = this.startPoint.x + Link.curve;
+            var endControlX = this.endPoint.x - Link.curve;
+            var newBounds = new Rect();
+            var s = new Point();
+            var e = new Point();
+            if (this.startPoint.x <= endControlX) {
+                newBounds.x = this.startPoint.x;
+                newBounds.width = this.endPoint.x - this.startPoint.x;
+                e.x = newBounds.width;
+            }
+            else {
+                newBounds.x = endControlX;
+                newBounds.width = startControlX - endControlX;
+                s.x = this.startPoint.x - endControlX;
+                e.x = Link.curve;
+            }
+            if (this.startPoint.y <= this.endPoint.y) {
+                newBounds.y = this.startPoint.y - 2;
+                newBounds.height = this.endPoint.y - this.startPoint.y + 4;
+                s.y = 2;
+                e.y = newBounds.height - 2;
+            }
+            else {
+                newBounds.y = this.endPoint.y - 2;
+                newBounds.height = this.startPoint.y - this.endPoint.y + 4;
+                s.y = newBounds.height - 2;
+                e.y = 2;
+            }
+            setTranslation(this.element, new Point(newBounds.x, newBounds.y));
+            this.element.setAttribute("width", "".concat(newBounds.width));
+            this.element.setAttribute("height", "".concat(newBounds.height));
+            this.path.setAttribute("d", "M ".concat(s.x, " ").concat(s.y, " C ").concat(s.x + Link.curve, " ").concat(s.y, ", ").concat(e.x - Link.curve, " ").concat(e.y, ", ").concat(e.x, " ").concat(e.y));
         };
         Link.curve = 32;
         return Link;
@@ -458,7 +499,8 @@ var Graph;
             for (var i = 0; i < rows; i++) {
                 _loop_1(i);
             }
-            this.graph.graphArea.appendChild(this.element);
+            var graphNodes = document.getElementById("graph-nodes");
+            graphNodes.appendChild(this.element);
             this.setPosition(new Point(nodeData.posX, nodeData.posY));
         }
         Node.prototype.getPosition = function () {
