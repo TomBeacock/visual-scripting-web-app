@@ -1,42 +1,3 @@
-const nodeDefinitions = {
-    start: {
-        name: "Start",
-        category: "Flow",
-        inputs: [],
-        outputs: [{name: "", type: "Flow"}]
-    },
-    if: {
-        name: "If",
-        category: "Flow",
-        inputs: [{ name: "", type: "Flow"}, { name: "Condition", type: "Boolean"}],
-        outputs: [{ name: "True", type: "Flow"}, { name: "False", type: "Flow"}]
-    },
-    add: {
-        name: "Add",
-        category: "Math",
-        inputs: [{name: "A", type: "Int"}, {name: "B", type: "Int"}],
-        outputs: [{name: "", type: "Int"}]
-    },
-    subtract: {
-        name: "Subtract",
-        category: "Math",
-        inputs: [{name: "A", type: "Int"}, {name: "B", type: "Int"}],
-        outputs: [{name: "", type: "Int"}]
-    },
-    multipy: {
-        name: "Multiply",
-        category: "Math",
-        inputs: [{name: "A", type: "Int"}, {name: "B", type: "Int"}],
-        outputs: [{name: "", type: "Int"}]
-    },
-    divide: {
-        name: "Divide",
-        category: "Math",
-        inputs: [{name: "A", type: "Int"}, {name: "B", type: "Int"}],
-        outputs: [{name: "", type: "Int"}]
-    },
-};
-
 let nodes = [
     {
         id: 0,
@@ -64,12 +25,17 @@ let nodes = [
     }
 ];
 
+import { Graph } from "./graph";
+import { Node } from "./node";
+import { nodeDefinitions } from "./nodedefinitions";
+import { Point, getTopLeft } from "./util";
+
 // Generate graph
-const graph: Graph.Graph = new Graph.Graph();
+const graph: Graph = new Graph();
 
 for (let i = 0; i < nodes.length; i++) {
     const nodeData = nodes[i];
-    graph.nodes.push(new Graph.Node(graph, nodeData.type, new Point(nodeData.posX, nodeData.posY)));
+    graph.nodes.push(new Node(graph, nodeData.type, new Point(nodeData.posX, nodeData.posY)));
 }
 
 // Generate add node menu items
@@ -126,7 +92,7 @@ for (let key in nodeDefinitions) {
         if(event.button == 0) {
             event.stopPropagation();
             const nodePosition = graph.viewportToAreaPoint(getTopLeft(nodeMenu));
-            graph.nodes.push(new Graph.Node(graph, key, nodePosition));
+            graph.nodes.push(new Node(graph, key, nodePosition));
             nodeMenu.classList.remove("visible");
         }
     });

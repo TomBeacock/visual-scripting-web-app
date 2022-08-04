@@ -1,4 +1,4 @@
-class Point {
+export class Point {
     x: number;
     y: number;
 
@@ -20,7 +20,7 @@ class Point {
     }
 }
 
-class Rect {
+export class Rect {
     x: number;
     y: number;
     width: number;
@@ -42,16 +42,16 @@ function ceilMultiple(value: number, multiple: number): number {
     return Math.ceil(value / multiple) * multiple;
 }
 
-function getTranslation(element: HTMLElement): Point {
+export function getTranslation(element: HTMLElement): Point {
     const style: CSSStyleDeclaration = window.getComputedStyle(element);
     const matrix: DOMMatrixReadOnly = new DOMMatrixReadOnly(style.transform);
     return new Point(matrix.m41, matrix.m42);
 }
 
-function getTopLeft(element: HTMLElement): Point {
+export function getTopLeft(element: HTMLElement): Point {
     return new Point(element.offsetLeft, element.offsetTop);
 }
 
-function setTranslation(element: HTMLElement | SVGElement, translation: Point): void {
+export function setTranslation(element: HTMLElement | SVGElement, translation: Point): void {
     element.style.transform = `translate(${translation.x}px, ${translation.y}px)`;
 }

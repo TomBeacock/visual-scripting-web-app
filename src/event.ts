@@ -1,9 +1,9 @@
-interface ILiteEvent<T> {
+export interface ILiteEvent<T> {
     addListener(handler: { (data?: T): void }) : void;
     removeListener(handler: { (data?: T): void }) : void;
 }
 
-class LiteEvent<T> implements ILiteEvent<T> {
+export class LiteEvent<T> implements ILiteEvent<T> {
     private handlers: { (data?: T): void; }[] = [];
 
     public addListener(handler: { (data?: T): void }): void {

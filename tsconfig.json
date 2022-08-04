@@ -2,14 +2,6 @@
     "compilerOptions": {
         "target": "ES5",
         "module": "AMD",
-        "sourceMap": true,
-        "outFile": "./public/scripts/script.js"
-    },
-    "files": [
-        "src/util.ts",
-        "src/event.ts",
-        "src/checkbox.ts",
-        "src/graph.ts",
-        "src/main.ts"
-    ]
+        "sourceMap": true
+    }
 }

@@ -1,4 +1,4 @@
-class CheckBox {
+export class CheckBox {
     private checked: boolean;
 
     element: HTMLDivElement;
