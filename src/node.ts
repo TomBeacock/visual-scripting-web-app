@@ -1,24 +1,25 @@
 import { Graph } from "./graph";
 import { Pin, PinType, ValueType } from "./pin";
 import { nodeDefinitions } from "./nodedefinitions";
-import { CheckBox } from "./checkbox";
 import { Point, getTranslation, setTranslation } from "./util";
 
 export class Node {
-    private static currentID = 0;
-
-    private id: number;
-
-    // UI Elements
     element : HTMLDivElement;
     private inputs: Array<Pin> = [];
+    private inputFields: Array<NodeValueField> = [];
     private outputs: Array<Pin> = [];
 
     private graph: Graph;
+    private type: string;
 
     constructor(graph: Graph, type: string, position: Point) {
-        this.id = Node.currentID++;
         this.graph = graph;
+        this.type = type;
+
+        if(!(type in nodeDefinitions)) {
+            console.error("Invalid node types");
+            return;
+        }
 
         const nodeDefinition = nodeDefinitions[type];
     
@@ -49,43 +50,38 @@ export class Node {
                 const input = nodeDefinition.inputs[i];
                 const valueType: ValueType = stringToValueType(input.type);
 
+                // Input Pin
                 let inputPin: Pin = new Pin(this.graph, this, valueType, PinType.Input);
                 inputPin.element.style.gridColumn = "1";
                 inputPin.element.style.gridRow = row.toString();
                 this.inputs.push(inputPin);
                 body.appendChild(inputPin.element);
                 
+                // Input Label
                 const inputLabel: HTMLSpanElement = document.createElement("span");
                 inputLabel.innerHTML = input.name;
                 inputLabel.style.gridColumn = "2";
                 inputLabel.style.gridRow = row.toString();
                 body.appendChild(inputLabel);
                 
-                if(valueType & (ValueType.Int | ValueType.Float | ValueType.String)) {
-                    const inputField: HTMLSpanElement = document.createElement("span");
-                    inputField.classList.add("input");
-                    inputField.setAttribute("role", "textbox");
-                    inputField.setAttribute("contenteditable", "true");
-                    inputField.style.gridColumn = "3";
-                    inputField.style.gridRow = row.toString();
-                    body.appendChild(inputField);
+                // Input Field
+                let valueField: NodeValueField;
+                if(valueType & (ValueType.Int | ValueType.Float | ValueType.String))
+                    valueField = new TextValueField();
+                else if(valueType == ValueType.Boolean) 
+                    valueField = new BooleanValueField();
 
-                    inputPin.onLinksChanged.addListener((linkCount: number) => {
-                        inputField.style.visibility = linkCount > 0 ? "hidden" : "visible";
-                    });
-                }
-                else if(valueType == ValueType.Boolean) {
-                    const inputCheck: CheckBox = new CheckBox();
-                    inputCheck.element.style.gridColumn = "3";
-                    inputCheck.element.style.gridRow = row.toString();
-                    body.appendChild(inputCheck.element);
+                valueField.Element.style.gridColumn = "3";
+                valueField.Element.style.gridRow = row.toString();
+                body.appendChild(valueField.Element);
 
-                    inputPin.onLinksChanged.addListener((linkCount: number) => {
-                        inputCheck.element.style.visibility = linkCount > 0 ? "hidden" : "visible";
-                    });
-                }
+                inputPin.onLinksChanged.addListener((linkCount: number) => {
+                    valueField.Element.style.visibility = linkCount > 0 ? "hidden" : "visible";
+                });
+                this.inputFields.push(valueField);
+
                 /* Enum
-                else if(valueType == ValueType.Boolean) {
+                else if(valueType == ValueType.Enum) {
                     const inputSelect: HTMLSelectElement = document.createElement("select");
                     const trueOption = document.createElement("option");
                     trueOption.innerHTML = "True";
@@ -124,17 +120,28 @@ export class Node {
         const graphNodes = document.getElementById("graph-nodes");
         graphNodes.appendChild(this.element);
 
-        this.setPosition(position);
+        this.Position = position;
     }
 
-    getPosition(): Point {
+    get Position(): Point {
         return getTranslation(this.element);
     }
 
-    setPosition(position: Point): void {
+    set Position(position: Point) {
         setTranslation(this.element, position);
         this.inputs.forEach(input => input.updateLinkPositions());
         this.outputs.forEach(output => output.updateLinkPositions());
+    }
+
+    get Type(): string {
+        return this.type;
+    }
+
+    getInput(index: number): Node | string {
+        if(this.inputs[index].links.length > 0) {
+            return this.inputs[index].links[0].StartPin.getNode();
+        }
+        return this.inputFields[index].Value;
     }
 
     private onMouseDown(event: MouseEvent): void {
@@ -147,6 +154,58 @@ export class Node {
             const position: Point = new Point(event.clientX, event.clientY);
             this.graph.beginDrag(this, position);
         }
+    }
+}
+
+interface NodeValueField {
+    get Element(): HTMLElement;
+    get Value(): string;
+}
+
+class BooleanValueField implements NodeValueField {
+    private checked: boolean;
+    private element: HTMLDivElement;
+
+    constructor() {
+        this.element = document.createElement("div");
+        this.element.classList.add("checkbox");
+        const tick: HTMLSpanElement = document.createElement("span");
+        tick.classList.add("material-symbols-rounded");
+        tick.innerHTML = "check";
+        this.element.appendChild(tick);
+        this.element.addEventListener("click", () => { this.Checked = !this.checked });
+    }
+
+    set Checked(checked: boolean) {
+        this.checked = checked;
+        this.element.setAttribute("checked", `${this.checked}`);
+    }
+
+    get Element(): HTMLElement {
+        return this.element;
+    }
+
+    get Value(): string {
+        return this.checked ? "true" : "false";
+    }
+}
+
+class TextValueField implements NodeValueField {
+    private element: HTMLSpanElement;
+
+    constructor() {
+        this.element = document.createElement("span");
+        this.element.classList.add("input");
+        this.element.setAttribute("role", "textbox");
+        this.element.setAttribute("contenteditable", "true");
+    }
+
+    get Element(): HTMLElement {
+        return this.element;
+    }
+
+    get Value(): string {
+        return this.element.textContent;
     }
 }
 

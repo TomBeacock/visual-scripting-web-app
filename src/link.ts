@@ -38,12 +38,20 @@ export class Link {
         this.updatePath();
     }
 
-    setStartPoint(startPoint: Point): void {
+    get StartPin(): Pin {
+        return this.startPin;
+    }
+
+    get EndPin(): Pin {
+        return this.endPin;
+    }
+
+    set StartPoint(startPoint: Point) {
         this.startPoint = startPoint;
         this.updatePath();
     }
 
-    setEndPoint(endPoint: Point): void {
+    set EndPoint(endPoint: Point) {
         this.endPoint = endPoint;
         this.updatePath();
     }

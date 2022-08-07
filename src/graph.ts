@@ -56,7 +56,7 @@ export class Graph {
                 this.dragTargetBegin.x + event.clientX - this.dragCursorBegin.x,
                 this.dragTargetBegin.y + event.clientY - this.dragCursorBegin.y
             );
-            this.dragNode.setPosition(position);
+            this.dragNode.Position = position;
         }
     
         if(this.linking) {
@@ -64,10 +64,10 @@ export class Graph {
             const position: Point = new Point(event.clientX - areaRect.left, event.clientY - areaRect.top);
             switch(this.linkPin.getType()) {
                 case PinType.Output:
-                    this.drawingLink.setEndPoint(position);
+                    this.drawingLink.EndPoint = position;
                     break;
                 case PinType.Input:
-                    this.drawingLink.setStartPoint(position);
+                    this.drawingLink.StartPoint = position;
                     break;
             }
         }
@@ -112,7 +112,7 @@ export class Graph {
         this.dragNode = node;
         this.dragNode.element.style.cursor = "grabbing";
         this.dragCursorBegin = position;
-        this.dragTargetBegin = this.dragNode.getPosition();
+        this.dragTargetBegin = this.dragNode.Position;
         this.dragging = true;
     }
 

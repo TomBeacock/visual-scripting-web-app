@@ -20,7 +20,7 @@ export enum ValueType {
 export class Pin {
     private type: PinType = PinType.Output;
     private valueType: ValueType;
-    private links: Array<Link> = [];
+    links: Array<Link> = [];
 
     private graph: Graph;
     private node: Node;
@@ -135,10 +135,10 @@ export class Pin {
     updateLinkPositions(): void {
         switch(this.type) {
             case PinType.Output:
-                this.links.forEach(link => link.setStartPoint(this.getPosition()));
+                this.links.forEach(link => { link.StartPoint = this.getPosition() });
                 break;
             case PinType.Input:
-                this.links.forEach(link => link.setEndPoint(this.getPosition()));
+                this.links.forEach(link => { link.EndPoint = this.getPosition() });
                 break;
         }
     }
