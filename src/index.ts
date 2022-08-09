@@ -28,7 +28,7 @@ let nodes = [
 import { Graph } from "./graph";
 import { Node } from "./node";
 import { Point } from "./util";
-import { initAddNodeMenu } from "./addNodeMenu";
+import { initAddNodeMenu } from "./add-node-menu";
 
 // Generate graph
 const graph: Graph = new Graph();

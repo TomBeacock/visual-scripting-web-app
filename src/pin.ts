@@ -18,27 +18,27 @@ export enum ValueType {
 }
 
 export class Pin {
-    private type: PinType = PinType.Output;
-    private valueType: ValueType;
+    private _type: PinType = PinType.Output;
+    private _valueType: ValueType;
     links: Array<Link> = [];
 
-    private graph: Graph;
-    private node: Node;
+    private _graph: Graph;
+    private _node: Node;
 
-    public element: HTMLDivElement;
+    element: HTMLDivElement;
     private graphic: HTMLDivElement;
 
     private readonly linksChangedEvent = new LiteEvent<number>();
 
     constructor(graph: Graph, node: Node, valueType: ValueType, type: PinType = PinType.Output) {
-        this.graph = graph;
-        this.node = node;
-        this.type = type;
-        this.valueType = valueType;
+        this._graph = graph;
+        this._node = node;
+        this._type = type;
+        this._valueType = valueType;
 
         this.element = document.createElement("div");
         this.element.classList.add("pin");
-        if(this.type == PinType.Output)
+        if(this._type == PinType.Output)
             this.element.classList.add("right");
 
         this.element.addEventListener("mousedown", event => this.onMouseDown(event));
@@ -49,7 +49,7 @@ export class Pin {
 
         this.graphic = document.createElement("div");
         this.graphic.classList.add("pin-graphic");
-        switch(this.valueType) {
+        switch(this._valueType) {
             case ValueType.Flow: this.graphic.classList.add("type-flow"); break;
             case ValueType.Int: this.graphic.classList.add("type-int"); break;
             case ValueType.Float: this.graphic.classList.add("type-float"); break;
@@ -60,14 +60,14 @@ export class Pin {
         this.element.appendChild(this.graphic);
     }
 
-    getType(): PinType { return this.type; }
-    getValueType(): ValueType { return this.valueType; }
-    getNode(): Node { return this.node; }
+    get type(): PinType { return this._type; }
+    get valueType(): ValueType { return this._valueType; }
+    get node(): Node { return this._node; }
 
     get onLinksChanged(): ILiteEvent<number> { return this.linksChangedEvent.expose(); }
 
-    getPosition(): Point {
-        const graphRect: DOMRect = this.graph.graphArea.getBoundingClientRect();
+    get position(): Point {
+        const graphRect: DOMRect = this._graph.graphArea.getBoundingClientRect();
         const pinRect: DOMRect = this.element.getBoundingClientRect();
         return new Point(
             pinRect.left + pinRect.width / 2 - graphRect.left,
@@ -89,6 +89,17 @@ export class Pin {
         this.linksChangedEvent.dispatch(this.links.length);
     }
 
+    updateLinkPositions(): void {
+        switch(this._type) {
+            case PinType.Output:
+                this.links.forEach(link => { link.startPoint = this.position });
+                break;
+            case PinType.Input:
+                this.links.forEach(link => { link.endPoint = this.position });
+                break;
+        }
+    }
+
     private setGraphicSolid(solid: boolean): void {
         if(solid)
             this.element.classList.add("solid");
@@ -103,7 +114,7 @@ export class Pin {
         if(event.button == 0) {
             event.preventDefault();
             event.stopPropagation();
-            this.graph.beginLink(this);
+            this._graph.beginLink(this);
         }
         else if(event.button == 2) {
             event.preventDefault();
@@ -120,7 +131,7 @@ export class Pin {
             return;
 
         if(event.button == 0)
-            this.graph.endLink(this);
+            this._graph.endLink(this);
     }
 
     private onMouseEnter(event: MouseEvent): void {
@@ -130,16 +141,5 @@ export class Pin {
     private onMouseExit(event: MouseEvent): void {
         if(this.links.length <= 0)
             this.setGraphicSolid(false);
-    }
-
-    updateLinkPositions(): void {
-        switch(this.type) {
-            case PinType.Output:
-                this.links.forEach(link => { link.StartPoint = this.getPosition() });
-                break;
-            case PinType.Input:
-                this.links.forEach(link => { link.EndPoint = this.getPosition() });
-                break;
-        }
     }
 }

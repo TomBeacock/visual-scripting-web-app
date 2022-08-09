@@ -1,20 +1,19 @@
 import { Graph } from "./graph";
 import { Pin, PinType, ValueType } from "./pin";
-import { nodeDefinitions } from "./nodedefinitions";
+import { nodeDefinitions } from "./node-definitions";
 import { Point, getTranslation, setTranslation } from "./util";
 
 export class Node {
     element : HTMLDivElement;
-    private inputs: Array<Pin> = [];
-    private inputFields: Array<NodeValueField> = [];
-    private outputs: Array<Pin> = [];
+    private _inputs: Array<{ pin: Pin, valueField: NodeValueField }> = [];
+    private _outputs: Array<Pin> = [];
 
-    private graph: Graph;
-    private type: string;
+    private _graph: Graph;
+    private _type: string;
 
     constructor(graph: Graph, type: string, position: Point) {
-        this.graph = graph;
-        this.type = type;
+        this._graph = graph;
+        this._type = type;
 
         if(!(type in nodeDefinitions)) {
             console.error("Invalid node types");
@@ -51,10 +50,9 @@ export class Node {
                 const valueType: ValueType = stringToValueType(input.type);
 
                 // Input Pin
-                let inputPin: Pin = new Pin(this.graph, this, valueType, PinType.Input);
+                let inputPin: Pin = new Pin(this._graph, this, valueType, PinType.Input);
                 inputPin.element.style.gridColumn = "1";
                 inputPin.element.style.gridRow = row.toString();
-                this.inputs.push(inputPin);
                 body.appendChild(inputPin.element);
                 
                 // Input Label
@@ -65,20 +63,23 @@ export class Node {
                 body.appendChild(inputLabel);
                 
                 // Input Field
-                let valueField: NodeValueField;
-                if(valueType & (ValueType.Int | ValueType.Float | ValueType.String))
-                    valueField = new TextValueField();
-                else if(valueType == ValueType.Boolean) 
-                    valueField = new BooleanValueField();
+                let valueField: NodeValueField = null;
+                if(valueType != ValueType.Flow) {
+                    if(valueType & (ValueType.Int | ValueType.Float | ValueType.String))
+                        valueField = new TextValueField();
+                    else if(valueType == ValueType.Boolean) 
+                        valueField = new BooleanValueField();
+    
+                    valueField.element.style.gridColumn = "3";
+                    valueField.element.style.gridRow = row.toString();
+                    body.appendChild(valueField.element);
+    
+                    inputPin.onLinksChanged.addListener((linkCount: number) => {
+                        valueField.element.style.visibility = linkCount > 0 ? "hidden" : "visible";
+                    });
+                }
 
-                valueField.Element.style.gridColumn = "3";
-                valueField.Element.style.gridRow = row.toString();
-                body.appendChild(valueField.Element);
-
-                inputPin.onLinksChanged.addListener((linkCount: number) => {
-                    valueField.Element.style.visibility = linkCount > 0 ? "hidden" : "visible";
-                });
-                this.inputFields.push(valueField);
+                this._inputs.push({ pin: inputPin, valueField: valueField });
 
                 /* Enum
                 else if(valueType == ValueType.Enum) {
@@ -110,38 +111,39 @@ export class Node {
                 outputLabel.style.gridRow = row.toString();
                 body.appendChild(outputLabel);
 
-                const outputPin = new Pin(this.graph, this, valueType);
+                const outputPin = new Pin(this._graph, this, valueType);
                 outputPin.element.style.gridColumn = "6";
                 outputPin.element.style.gridRow = row.toString();
-                this.outputs.push(outputPin);
+                this._outputs.push(outputPin);
                 body.appendChild(outputPin.element);
             }
         }
         const graphNodes = document.getElementById("graph-nodes");
         graphNodes.appendChild(this.element);
 
-        this.Position = position;
+        this.position = position;
     }
 
-    get Position(): Point {
+    get position(): Point {
         return getTranslation(this.element);
     }
 
-    set Position(position: Point) {
+    set position(position: Point) {
         setTranslation(this.element, position);
-        this.inputs.forEach(input => input.updateLinkPositions());
-        this.outputs.forEach(output => output.updateLinkPositions());
+        this._inputs.forEach(input => input.pin.updateLinkPositions());
+        this._outputs.forEach(output => output.updateLinkPositions());
     }
 
-    get Type(): string {
-        return this.type;
+    get type(): string {
+        return this._type;
     }
 
     getInput(index: number): Node | string {
-        if(this.inputs[index].links.length > 0) {
-            return this.inputs[index].links[0].StartPin.getNode();
+        const input: { pin: Pin, valueField: NodeValueField } = this._inputs[index];
+        if(input.pin.links.length > 0) {
+            return input.pin.links[0].startPin.node;
         }
-        return this.inputFields[index].Value;
+        return input.valueField.value;
     }
 
     private onMouseDown(event: MouseEvent): void {
@@ -152,60 +154,60 @@ export class Node {
             event.preventDefault();
 
             const position: Point = new Point(event.clientX, event.clientY);
-            this.graph.beginDrag(this, position);
+            this._graph.beginDrag(this, position);
         }
     }
 }
 
 interface NodeValueField {
-    get Element(): HTMLElement;
-    get Value(): string;
+    get element(): HTMLElement;
+    get value(): string;
 }
 
 class BooleanValueField implements NodeValueField {
-    private checked: boolean;
-    private element: HTMLDivElement;
+    private _checked: boolean;
+    private _element: HTMLDivElement;
 
     constructor() {
-        this.element = document.createElement("div");
-        this.element.classList.add("checkbox");
+        this._element = document.createElement("div");
+        this._element.classList.add("checkbox");
         const tick: HTMLSpanElement = document.createElement("span");
         tick.classList.add("material-symbols-rounded");
         tick.innerHTML = "check";
-        this.element.appendChild(tick);
-        this.element.addEventListener("click", () => { this.Checked = !this.checked });
+        this._element.appendChild(tick);
+        this._element.addEventListener("click", () => { this.checked = !this._checked });
     }
 
-    set Checked(checked: boolean) {
-        this.checked = checked;
-        this.element.setAttribute("checked", `${this.checked}`);
+    set checked(checked: boolean) {
+        this._checked = checked;
+        this._element.setAttribute("checked", `${this._checked}`);
     }
 
-    get Element(): HTMLElement {
-        return this.element;
+    get element(): HTMLElement {
+        return this._element;
     }
 
-    get Value(): string {
-        return this.checked ? "true" : "false";
+    get value(): string {
+        return this._checked ? "true" : "false";
     }
 }
 
 class TextValueField implements NodeValueField {
-    private element: HTMLSpanElement;
+    private _element: HTMLSpanElement;
 
     constructor() {
-        this.element = document.createElement("span");
-        this.element.classList.add("input");
-        this.element.setAttribute("role", "textbox");
-        this.element.setAttribute("contenteditable", "true");
+        this._element = document.createElement("span");
+        this._element.classList.add("input");
+        this._element.setAttribute("role", "textbox");
+        this._element.setAttribute("contenteditable", "true");
     }
 
-    get Element(): HTMLElement {
-        return this.element;
+    get element(): HTMLElement {
+        return this._element;
     }
 
-    get Value(): string {
-        return this.element.textContent;
+    get value(): string {
+        return this._element.textContent;
     }
 }
 
@@ -215,7 +217,7 @@ function stringToValueType(valueType: string): ValueType {
         case "Int": return ValueType.Int;
         case "Float": return ValueType.Float;
         case "String": return ValueType.String;
-        case "Boolean": return ValueType.Boolean;
+        case "Bool": return ValueType.Boolean;
         default: return ValueType.Flow;
     }
 }

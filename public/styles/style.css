@@ -300,8 +300,7 @@ h2 {
 }
 
 .graph-node .head span {
-    margin-left: 0.5rem;
-    margin-right: 2rem;
+    margin-inline: 0.5rem;
     margin-block: auto;
 }
 

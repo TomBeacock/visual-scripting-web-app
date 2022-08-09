@@ -1,6 +1,6 @@
 import { Graph } from "./graph";
 import { Node } from "./node";
-import { nodeDefinitions } from "./nodedefinitions";
+import { nodeDefinitions } from "./node-definitions";
 import { getTopLeft } from "./util";
 
 // Generate add node menu items
