@@ -1,5 +1,5 @@
 .theme-light {
-    --page-color: #e2e3e4;
+    --page-color: #f4f5fc;
     --page-text-color: #141414;
 
     --button-hover-color: #f1f2f4;
@@ -18,20 +18,20 @@
     --dock-pane-body-color: #2d2d30; 
 
     --graph-viewport-color: var(--page-color);
-    --graph-viewport-dot-color: #bfccd9;
+    --graph-viewport-dot-color: #e6e7ed;
 
     --node-color: #ffffff;
-    --node-border-color: #f1f2f4;
-    --node-header-color: #f1f2f4;
+    --node-border: #e7e7e8;
+    --node-header-color: #ffffff;
     --node-header-border: #e7e6e7;
-    --node-input-color: #f1f2f4;
+    --node-input-color: #f4f5fc;
 
-    --link-color: #a5a5a5;
+    --link-color: #c3c3c8;
 
     --context-menu-color: #FFFFFF;
     --context-menu-border-color: #f1f2f4;
 
-    --type-flow-color: #a5a5a5;
+    --type-flow-color: #c3c3c8;
     --type-int-color: #21a4d0;
     --type-float-color: #38c61e;
     --type-string-color: #f97908;
@@ -39,7 +39,7 @@
 }
 
 .theme-dark {
-    --page-color: #1c1b1e;
+    --page-color: #1d1b1f;
     --page-text-color: #fbfbfb;
 
     --button-hover-color: #333336;
@@ -54,17 +54,17 @@
     --title-bar-color: #363639;
     --title-bar-border-color: #232325;
 
-    --dock-pane-header-color: #2a2b2d;
+    --dock-pane-header-color: #363537;
     --dock-pane-body-color: #2d2d30; 
 
     --graph-viewport-color: var(--page-color);
     --graph-viewport-dot-color: #2f2f31;
 
-    --node-color: #262626;
-    --node-border-color: #343335;
-    --node-header-color: #343335;
-    --node-header-border: #303031;
-    --node-input-color: #343335;
+    --node-color: #272627;
+    --node-border: transparent;
+    --node-header-color: #3d3c3e;
+    --node-header-border: transparent;
+    --node-input-color: #2f2e30;
 
     --link-color: #ffffff;
 
@@ -275,8 +275,6 @@ h2 {
     position: relative;
     width: 100%;
     height: 100%;
-    background-size: var(--grid-size) var(--grid-size);
-    background-image: radial-gradient(circle, var(--graph-viewport-dot-color) 1px, transparent 1px);
     overflow: hidden;
 }
 
@@ -284,8 +282,8 @@ h2 {
 .graph-node {
     position: absolute;
     background-color: var(--node-color);
-    border: 1px solid var(--node-border-color);
-    border-radius: 0.125rem;
+    border: 1px solid var(--node-border);
+    border-radius: 0.25rem;
     cursor: grab;
 }
 
@@ -294,13 +292,14 @@ h2 {
     display: flex;
     background-color: var(--node-header-color);
     border-bottom: 1px solid var(--node-header-border);
-    border-radius: 0.125rem 0.125rem 0 0;
+    border-radius: 0.25rem 0.25rem 0 0;
+    font-size: 14px;
     pointer-events: none;
     user-select: none;
 }
 
 .graph-node .head span {
-    margin-inline: 0.5rem;
+    margin-inline: 0.5rem 2rem;
     margin-block: auto;
 }
 
@@ -478,24 +477,49 @@ h2 {
 .type-flow {
     background-color: var(--type-flow-color);
     border-color: var(--type-flow-color);
+    stroke: var(--type-flow-color);
 }
 
 .type-int {
     background-color: var(--type-int-color);
     border-color: var(--type-int-color);
+    stroke: var(--type-int-color);
 }
 
 .type-float {
     background-color: var(--type-float-color);
     border-color: var(--type-float-color);
+    stroke: var(--type-float-color);
 }
 
 .type-string {
     background-color: var(--type-string-color);
     border-color: var(--type-string-color);
+    stroke: var(--type-string-color);
 }
 
 .type-boolean {
     background-color: var(--type-boolean-color);
     border-color: var(--type-boolean-color);
+    stroke: var(--type-boolean-color);
+}
+
+.link-type-flow {
+    stroke: var(--type-flow-color);
+}
+
+.link-type-int {
+    stroke: var(--type-int-color);
+}
+
+.link-type-float {
+    stroke: var(--type-float-color);
+}
+
+.link-type-string {
+    stroke: var(--type-string-color);
+}
+
+.link-type-boolean {
+    stroke: var(--type-boolean-color);
 }

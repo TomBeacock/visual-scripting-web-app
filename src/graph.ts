@@ -47,10 +47,12 @@ export class Graph {
             return;
 
         this._linkPin = pin;
+        this._linkPin.linking = true;
         this._linking = true;
 
         const position: Point = this._linkPin.position;
         this._drawingLink.setPoints(position, position);
+        this._drawingLink.valueType = pin.valueType;
     }
 
     endLink(pin: Pin): void {
@@ -66,12 +68,12 @@ export class Graph {
                 case PinType.Input:
                     link = new Link(pin, this._linkPin);
                     break;
-            }                
+            }
+            link.valueType = pin.valueType;     
             this._linkPin.addLink(link);
             pin.addLink(link);
         }
-        this._drawingLink.reset();
-        this._linking = false;
+        this.endLinking();
     }
 
     viewportToAreaPoint(point: Point): Point {
@@ -133,8 +135,7 @@ export class Graph {
         }
 
         if(this._linking) {
-            this._drawingLink.reset();
-            this._linking = false;
+            this.endLinking();
         }
     }
 
@@ -151,5 +152,11 @@ export class Graph {
         const searchbar: HTMLInputElement = <HTMLInputElement>document.getElementById("node-search-bar");
         searchbar.value = "";
         searchbar.focus();
+    }
+
+    private endLinking() {
+        this._drawingLink.reset();
+        this._linking = false;
+        this._linkPin.linking = false;
     }
 }

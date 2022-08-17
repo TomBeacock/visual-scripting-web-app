@@ -31,7 +31,7 @@ export class Node {
         const head: HTMLDivElement = document.createElement("div");
         head.classList.add("head");
         const title: HTMLSpanElement = document.createElement("span");
-        title.innerHTML = nodeDefinition.name;
+        title.textContent = nodeDefinition.name;
         head.appendChild(title);
         this.element.appendChild(head);
 
@@ -57,7 +57,7 @@ export class Node {
                 
                 // Input Label
                 const inputLabel: HTMLSpanElement = document.createElement("span");
-                inputLabel.innerHTML = input.name;
+                inputLabel.textContent = input.name;
                 inputLabel.style.gridColumn = "2";
                 inputLabel.style.gridRow = row.toString();
                 body.appendChild(inputLabel);
@@ -85,10 +85,10 @@ export class Node {
                 else if(valueType == ValueType.Enum) {
                     const inputSelect: HTMLSelectElement = document.createElement("select");
                     const trueOption = document.createElement("option");
-                    trueOption.innerHTML = "True";
+                    trueOption.textContent = "True";
                     inputSelect.options.add(trueOption);
                     const falseOption = document.createElement("option");
-                    falseOption.innerHTML = "False";
+                    falseOption.textContent = "False";
                     inputSelect.options.add(falseOption);
                     inputSelect.style.gridColumn = "3";
                     inputSelect.style.gridRow = row.toString();
@@ -106,7 +106,7 @@ export class Node {
 
                 const outputLabel: HTMLSpanElement = document.createElement("span");
                 outputLabel.classList.add("text-right");
-                outputLabel.innerHTML = output.name;
+                outputLabel.textContent = output.name;
                 outputLabel.style.gridColumn = "5";
                 outputLabel.style.gridRow = row.toString();
                 body.appendChild(outputLabel);
@@ -173,7 +173,7 @@ class BooleanValueField implements NodeValueField {
         this._element.classList.add("checkbox");
         const tick: HTMLSpanElement = document.createElement("span");
         tick.classList.add("material-symbols-rounded");
-        tick.innerHTML = "check";
+        tick.textContent = "check";
         this._element.appendChild(tick);
         this._element.addEventListener("click", () => { this.checked = !this._checked });
     }

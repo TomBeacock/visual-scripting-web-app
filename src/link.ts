@@ -1,4 +1,4 @@
-import { Pin } from "./pin";
+import { Pin, ValueType } from "./pin";
 import { Point, Rect, setTranslation } from "./util";
 
 export class Link {
@@ -55,6 +55,17 @@ export class Link {
     set endPoint(endPoint: Point) {
         this._endPoint = endPoint;
         this.updatePath();
+    }
+
+    set valueType(valueType: ValueType) {
+        this._element.classList.value = "graph-link";
+        switch(valueType) {
+            case ValueType.Flow: this._element.classList.add("link-type-flow"); break;
+            case ValueType.Int: this._element.classList.add("link-type-int"); break;
+            case ValueType.Float: this._element.classList.add("link-type-float"); break;
+            case ValueType.String: this._element.classList.add("link-type-string"); break;
+            case ValueType.Boolean: this._element.classList.add("link-type-boolean"); break;
+        }
     }
 
     setPoints(startPoint: Point, endPoint: Point): void {

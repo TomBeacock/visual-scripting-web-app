@@ -24,6 +24,7 @@ export class Pin {
 
     private _graph: Graph;
     private _node: Node;
+    private _linking: boolean;
 
     element: HTMLDivElement;
     private graphic: HTMLDivElement;
@@ -74,9 +75,14 @@ export class Pin {
             pinRect.top + pinRect.height / 2 - graphRect.top);
     }
 
+    set linking(linking: boolean) {
+        this._linking = linking;
+        this.updateFill();
+    }
+
     addLink(link: Link): void {
         this.links.push(link);
-        this.setGraphicSolid(true);
+        this.updateFill();
         this.linksChangedEvent.dispatch(this.links.length);
     }
 
@@ -84,8 +90,7 @@ export class Pin {
         let index: number = this.links.indexOf(link);
         if(index > -1)
             this.links.splice(index, 1);
-        if(this.links.length <= 0)
-            this.setGraphicSolid(false);
+        this.updateFill();
         this.linksChangedEvent.dispatch(this.links.length);
     }
 
@@ -98,6 +103,10 @@ export class Pin {
                 this.links.forEach(link => { link.endPoint = this.position });
                 break;
         }
+    }
+
+    private updateFill() {
+        this.setGraphicSolid(this.links.length > 0 || this._linking);
     }
 
     private setGraphicSolid(solid: boolean): void {
@@ -139,7 +148,6 @@ export class Pin {
     }
 
     private onMouseExit(event: MouseEvent): void {
-        if(this.links.length <= 0)
-            this.setGraphicSolid(false);
+        this.updateFill();
     }
 }
