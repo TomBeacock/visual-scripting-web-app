@@ -105,5 +105,13 @@ export const nodeDefinitions = {
         category: "Logic",
         inputs: [{name: "A", type: "Int"}, {name: "B", type: "Int"}],
         outputs: [{name: "", type: "Bool"}]
+    },
+
+    // Printing
+    printInt: {
+        name: "Print Int",
+        category: "IO",
+        inputs: [{name: "", type: "Flow"}, {name: "", type: "Int"}],
+        outputs: [{name: "", type: "Flow"}]
     }
 };

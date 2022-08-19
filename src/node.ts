@@ -65,7 +65,9 @@ export class Node {
                 // Input Field
                 let valueField: NodeValueField = null;
                 if(valueType != ValueType.Flow) {
-                    if(valueType & (ValueType.Int | ValueType.Float | ValueType.String))
+                    if(valueType & (ValueType.Int | ValueType.Float))
+                        valueField = new NumberValueField();
+                    else if(valueType == ValueType.String)
                         valueField = new TextValueField();
                     else if(valueType == ValueType.Boolean) 
                         valueField = new BooleanValueField();
@@ -138,12 +140,19 @@ export class Node {
         return this._type;
     }
 
-    getInput(index: number): Node | string {
+    getInput(index: number): Node | number | boolean | string {
         const input: { pin: Pin, valueField: NodeValueField } = this._inputs[index];
         if(input.pin.links.length > 0) {
             return input.pin.links[0].startPin.node;
         }
         return input.valueField.value;
+    }
+
+    getOutput(index: number): Node {
+        const output: Pin = this._outputs[index];
+        if(output.links.length > 0)
+            return output.links[0].endPin.node;
+        return null;
     }
 
     private onMouseDown(event: MouseEvent): void {
@@ -161,7 +170,7 @@ export class Node {
 
 interface NodeValueField {
     get element(): HTMLElement;
-    get value(): string;
+    get value(): number | boolean | string;
 }
 
 class BooleanValueField implements NodeValueField {
@@ -187,8 +196,8 @@ class BooleanValueField implements NodeValueField {
         return this._element;
     }
 
-    get value(): string {
-        return this._checked ? "true" : "false";
+    get value(): boolean {
+        return this._checked;
     }
 }
 
@@ -208,6 +217,25 @@ class TextValueField implements NodeValueField {
 
     get value(): string {
         return this._element.textContent;
+    }
+}
+
+class NumberValueField implements NodeValueField {
+    private _element: HTMLSpanElement;
+
+    constructor() {
+        this._element = document.createElement("span");
+        this._element.classList.add("input");
+        this._element.setAttribute("role", "textbox");
+        this._element.setAttribute("contenteditable", "true");
+    }
+
+    get element(): HTMLElement {
+        return this._element;
+    }
+
+    get value(): number {
+        return parseInt(this._element.textContent);
     }
 }
 

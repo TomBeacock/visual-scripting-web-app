@@ -29,13 +29,22 @@ import { Graph } from "./graph";
 import { Node } from "./node";
 import { Point } from "./util";
 import { initAddNodeMenu } from "./add-node-menu";
+import { interpret } from "./interpreter";
 
 // Generate graph
 const graph: Graph = new Graph();
 initAddNodeMenu(graph);
 
 // Load nodes
-for (let i = 0; i < nodes.length; i++) {
+/*for (let i = 0; i < nodes.length; i++) {
     const nodeData = nodes[i];
     graph.nodes.push(new Node(graph, nodeData.type, new Point(nodeData.posX, nodeData.posY)));
-}
+}*/
+
+const start: Node = new Node(graph, "start", new Point(32, 32));
+graph.nodes.push(start);
+
+const runButton: HTMLButtonElement = <HTMLButtonElement>document.getElementById("run-button");
+runButton.addEventListener("click", () => {
+    interpret(start);
+});
