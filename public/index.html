@@ -26,33 +26,48 @@
             <button onclick="setThemeLight()">Light</button>
             <button onclick="setThemeDark()">Dark</button>
         </header>
-        <div class="fill-height">
-            <div class="dock-pane graph">
+        <div class="split-pane horizontal grow">
+            <div class="dock-pane">
                 <div class="header">
-                    <h2>Graph Editor</h2>
-                    <button class="icon-button blue"><span class="material-symbols-rounded">undo</span></button>
-                    <button class="icon-button blue"><span class="material-symbols-rounded">redo</span></button>
-                    <button id="run-button" class="icon-button green"><span class="material-symbols-rounded">play_arrow</span></button>
+                    <h2>Global</h2>
                 </div>
-                <div class="body">
-                    <div id="graph-viewport" class="graph-viewport">
-                        <div id="graph-area" class="graph-area">
-                            <div id="graph-links"></div>
-                            <div id="graph-nodes"></div>
-                        </div>
-                        <div id="node-menu" class="context-menu">
-                            <p>Add Node</p>
-                            <div class="search-bar"><span class="material-symbols-rounded">search</span><input id="node-search-bar" type="text"/></div>
-                            <div class="body">
-                                <ul id="node-tree-view" class="tree-view"></ul>
+            </div>
+            <div class="divider"></div>
+            <div class="split-pane vertical grow">
+                <div class="dock-pane grow graph">
+                    <div class="header">
+                        <h2>Graph Editor</h2>
+                        <button class="icon-button blue"><span class="material-symbols-rounded">undo</span></button>
+                        <button class="icon-button blue"><span class="material-symbols-rounded">redo</span></button>
+                        <button id="run-button" class="icon-button green"><span class="material-symbols-rounded">play_arrow</span></button>
+                    </div>
+                    <div class="body">
+                        <div id="graph-viewport" class="graph-viewport">
+                            <div id="graph-area" class="graph-area">
+                                <div id="graph-links"></div>
+                                <div id="graph-nodes"></div>
+                            </div>
+                            <div id="node-menu" class="context-menu">
+                                <p>Add Node</p>
+                                <div class="search-bar"><span class="material-symbols-rounded">search</span><input id="node-search-bar" type="text"/></div>
+                                <div class="body">
+                                    <ul id="node-tree-view" class="tree-view"></ul>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                <div class="divider"></div>
+                <div class="dock-pane">
+                    <div class="header">
+                        <h2>Console</h2>
+                    </div>
+                </div>
             </div>
+            <div class="divider"></div>
             <div class="dock-pane">
                 <div class="header">
-                    <h2>Console</h2>
+                    <h2>Local</h2>
                 </div>
             </div>
         </div>

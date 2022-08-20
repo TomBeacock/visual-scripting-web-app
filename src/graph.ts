@@ -141,12 +141,11 @@ export class Graph {
 
     private onContextMenu(event: MouseEvent): void {
         event.preventDefault();
-        const viewportRect: DOMRect = this.viewport.getBoundingClientRect();
         const nodeMenu: HTMLElement = document.getElementById("node-menu");
         const nodeMenuRect: DOMRect = nodeMenu.getBoundingClientRect();
-        const alignRight = event.clientX > viewportRect.width / 2;
-        nodeMenu.style.left = `${event.clientX - viewportRect.x - (alignRight ? nodeMenuRect.width : 0)}px`;
-        nodeMenu.style.top = `${event.clientY - viewportRect.y}px`;
+        const maxX = window.innerWidth - nodeMenuRect.width;
+        nodeMenu.style.left = `${Math.min(event.x, maxX)}px`;
+        nodeMenu.style.top = `${event.y}px`;
         nodeMenu.classList.add("visible");
 
         const searchbar: HTMLInputElement = <HTMLInputElement>document.getElementById("node-search-bar");
